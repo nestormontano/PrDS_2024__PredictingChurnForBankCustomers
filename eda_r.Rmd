@@ -117,6 +117,9 @@ data %>%
 
 
 ### Room 15
+```{r}
+#edicion de prueba
+```
 
 
 
