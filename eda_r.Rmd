@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+## Preliminares
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(skimr)
+```
+
+### Importacion
+
+```{r}
+data <- read_csv('Data/Churn_Modelling.csv')
+```
+#### Verificar y corregir columnas
+
+```{r}
+data %>% glimpse
+```
+
+```{r}
+data %>% 
+  mutate(
+    HasCrCard= factor(HasCrCard, levels= c(0, 1), 
+                             labels= c('no', 'si') ),
+    IsActiveMember= factor(IsActiveMember, levels= c(0, 1), 
+                             labels= c('no', 'si') ),
+    
+  ) ->
+  data
+```
+
+```{r}
+data %>% glimpse
+```
+
+
+# EDA
+
+## EDA Univariado
+
+```{r}
+skim( data)
+```
+
+
+
+
+```{r}
+data %>% 
+  reframe( 
+    tibble(
+      Descrip= c('P_0', 'P_02', 'P_25', 'P_50' , 'P_75', 'P_98', 'P_100') ,
+      Valor= quantile( Balance, c(0, 0.2, 0.25, 0.50 ,0.75, 0.98, 1), na.rm= T)
+    )
+    )
+```
+
+
+```{r}
+data %>% 
+  reframe( 
+    tibble(
+      Descrip= c('P_0', 'P_02', 'P_25', 'P_50' , 'P_75', 'P_97', 'P_100') ,
+      Valor= quantile( CreditScore, c(0, 0.2, 0.25, 0.50 ,0.75, 0.97, 1), na.rm= T)
+    )
+    )
+```
+
+```{r}
+data %>% 
+  group_by(Exited) %>% 
+  count()
+```
+
+```{r}
+data %>% 
+  group_by(Exited) %>% 
+  count() %>% 
+  ggplot( aes(x= Exited, y= n)) +
+  geom_col()
+```
+
+
+## EDA Multivariado
+
+### Room 11
+
+#### CreditScore vs Exited
+
+**Tabla**
+```{r}
+
+```
+
+**Grafico**
+```{r}
+
+```
+
+**Interpretacion**
+
+
+
+
+
+### Room 14
+
+
+
+
+
+
+### Room 15
+
+
+
+
+
+
+### Room 16
+
+
+
