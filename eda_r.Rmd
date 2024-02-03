@@ -111,6 +111,68 @@ data %>%
 
 ### Room 14
 
+#### Balance vs Exited
+
+**Tabla**
+Descriptivos
+```{r warning=FALSE}
+library(doBy)
+library(DescTools)
+
+data_r14 <- data %>% 
+  mutate(
+    Exited= factor(Exited, levels= c(0, 1),labels=c("no","si")))
+  
+cuartil_25 <- function(x) {
+  q25 <- quantile(x, 0.25, na.rm = TRUE)
+  return(cuartil = q25)
+}
+
+cuartil_75 <- function(x) {
+  q75 <- quantile(x, 0.75, na.rm = TRUE)
+  return(cuartil = q75)
+}
+
+summaryBy(
+  Balance ~ Exited,
+  data = data_r14,
+  FUN = c(mean, Mode, cuartil_25, median, cuartil_75, sd, min, max)
+)
+
+```
+
+
+Correlación de Spearman
+```{r warning=FALSE}
+cor(data_r14$Balance,as.numeric(data_r14$Exited))
+```
+Correlación Point-Biseral
+```{r warning=FALSE}
+library(polycor)
+polyserial(data_r14$Balance,data_r14$Exited)
+```
+
+**Grafico**
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_density()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_boxplot()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+
+**Interpretacion**
 
 
 
