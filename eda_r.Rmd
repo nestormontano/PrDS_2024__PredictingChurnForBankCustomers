@@ -1,12 +1,14 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "EDA con R"
+output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 
 ## Preliminares
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(magrittr)
 library(skimr)
@@ -69,6 +71,7 @@ data %>%
     )
     )
 ```
+
 ```{r}
 data %>% 
   ggplot( aes(x=1, y= Balance)) +
@@ -86,6 +89,9 @@ data %>%
     )
     )
 ```
+
+### Balanceo
+
 
 ```{r}
 data %>% 
@@ -139,13 +145,24 @@ data %>%
 
 
 ### Room 16
+```{r}
+data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+  geom_point()
+```
+
+
+```{r}
 data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
   geom_point()
 
-data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
-  geom_point()
+```
 
+
+```{r}
 data %>% ggplot(aes(x=Exited,y=Age)) + geom_boxplot()
+```
+
+```{r}
 # realizar una prueba Anova
 
 # Variables cualitativas
@@ -153,8 +170,16 @@ data %>%
   tabyl (HasCrCard,Exited) %>% 
   adorn_totals(c("row"))%>% adorn_percentages("col") %>% 
   adorn_pct_formatting(digits = 2)
+
+```
+
+
+```{r}
 #3 variables
 data %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
   geom_boxplot()
+
+```
+
 
 
