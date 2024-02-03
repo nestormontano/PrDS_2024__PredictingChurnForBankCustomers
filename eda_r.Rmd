@@ -44,12 +44,15 @@ data %>% glimpse
 
 ## EDA Univariado
 
+
+### Todas las variables
 ```{r}
 skim( data)
 ```
 
 
 
+### Variables con posibles outliers
 
 ```{r}
 data %>% 
@@ -60,7 +63,13 @@ data %>%
     )
     )
 ```
-
+```{r}
+data %>% 
+  ggplot( aes(x=1, y= Balance)) +
+  geom_boxplot() + 
+  coord_flip() +
+  theme_bw()
+```
 
 ```{r}
 data %>% 
