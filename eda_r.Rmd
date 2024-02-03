@@ -133,6 +133,22 @@ data %>%
 
 
 ### Room 16
+data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+  geom_point()
 
+data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+  geom_point()
+
+data %>% ggplot(aes(x=Exited,y=Age)) + geom_boxplot()
+# realizar una prueba Anova
+
+# Variables cualitativas
+data %>%
+  tabyl (HasCrCard,Exited) %>% 
+  adorn_totals(c("row"))%>% adorn_percentages("col") %>% 
+  adorn_pct_formatting(digits = 2)
+#3 variables
+data %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
+  geom_boxplot()
 
 
