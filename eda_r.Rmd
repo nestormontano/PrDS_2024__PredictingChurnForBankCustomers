@@ -10,6 +10,11 @@ output: html_notebook
 library(tidyverse)
 library(magrittr)
 library(skimr)
+library(janitor)
+library(rstatix)
+library(fdth)
+library(corrplot)
+library(ggplot2)
 ```
 
 ### Importacion
@@ -30,6 +35,7 @@ data %>%
                              labels= c('no', 'si') ),
     IsActiveMember= factor(IsActiveMember, levels= c(0, 1), 
                              labels= c('no', 'si') ),
+    Exited= factor(Exited, levels=c(0,1), labels= c('no','si'))
     
   ) ->
   data
