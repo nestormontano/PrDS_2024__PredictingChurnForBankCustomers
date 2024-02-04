@@ -195,7 +195,7 @@ data_r14 %>%
 
 **Interpretacion**
 Balance:
-Se puede observar que los clientes que abandonan la entidad tienen una media superior a los que no abandonan. Esto representaría lo obvio en una situación normal. Sin embargom se puede ver que existe bastante cantidad de gente que abandona la institución con una poca cantidad de dinero. Esto se podría explicar por normas o reglamentos que se hayan ajustado y pudo haber causado incertidumbre en los clientes. También se debe notar que la mayoría de gente que no abandona la entidad tiene poco dinero. Sin embargo, el promedio de estos no está alejado de los que sí abandonan.
+Se puede observar que los clientes que abandonan la entidad tienen una media superior a los que no abandonan. Esto representaría lo obvio en una situación normal. Sin embargom se puede ver que existe bastante cantidad de gente que abandona la institución con una poca cantidad de dinero. Esto se podría explicar por normas o reglamentos que se hayan aajustado y pudo haber causado incertidumbre en los clientes. También se debe notar que la mayoría de gente que no abandona la entidad tiene poco dinero. Sin embargo, el promedio de estos no está alejado de los que sí abandonan.
 
 #### CreditScore vs HasCrCard vs Exited
 ```{r}
@@ -207,7 +207,7 @@ ggplot(data_r14, aes(x = CreditScore, fill = HasCrCard)) +
   theme_minimal() +
   facet_grid(Exited ~ .)
 ```
-Si bien se ve que la distribución de los clientes que abandonaron y los que no se asemejan mucho. Los que abandonaron tienen cierta tendencia a tener un poco peor score que los que no. Principalmente si no tienen tarjeta de crédito. Esto indicaría que el problema se puede dar en algún otro producto financiero de la entidad y no precisamente de las tarjetas de crédito.
+Si bien se ve que la distribución de los clientes que abandonaron y los que no se asemejan mucho. Los que abandonaron tienen cierta tendencia a tener un poco peor score que los que no. Principalmente si no tienen tarjeta de crédito. Esto indicaría que el problema se puede dar en algún otro producto financiero de la entidad y no precisamente de las tarjetas de crédito. 
 
 ### Room 15
 
