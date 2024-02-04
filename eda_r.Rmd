@@ -1,17 +1,27 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "EDA con R"
+output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 
 ## Preliminares
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(magrittr)
 library(skimr)
+<<<<<<< HEAD
 library(dplyr)
 
+=======
+library(janitor)
+library(rstatix)
+library(fdth)
+library(corrplot)
+library(ggplot2)
+>>>>>>> ae3444ee58a76e022e3b38411b4b87e78decd0dd
 ```
 
 ### Importacion
@@ -32,6 +42,7 @@ data %>%
                              labels= c('no', 'si') ),
     IsActiveMember= factor(IsActiveMember, levels= c(0, 1), 
                              labels= c('no', 'si') ),
+    Exited= factor(Exited, levels=c(0,1), labels= c('no','si'))
     
   ) ->
   data
@@ -46,12 +57,15 @@ data %>% glimpse
 
 ## EDA Univariado
 
+
+### Todas las variables
 ```{r}
 skim( data)
 ```
 
 
 
+### Variables con posibles outliers
 
 ```{r}
 data %>% 
@@ -63,6 +77,13 @@ data %>%
     )
 ```
 
+```{r}
+data %>% 
+  ggplot( aes(x=1, y= Balance)) +
+  geom_boxplot() + 
+  coord_flip() +
+  theme_bw()
+```
 
 ```{r}
 data %>% 
@@ -73,6 +94,9 @@ data %>%
     )
     )
 ```
+
+### Balanceo
+
 
 ```{r}
 data %>% 
@@ -113,6 +137,35 @@ data %>%
 
 ### Room 14
 
+#### Balance vs Exited
+
+**Tabla**
+Descriptivos
+```{r warning=FALSE}
+library(doBy)
+library(DescTools)
+
+data_r14 <- data %>% 
+  mutate(
+    Exited= factor(Exited, levels= c(0, 1),labels=c("no","si")))
+  
+cuartil_25 <- function(x) {
+  q25 <- quantile(x, 0.25, na.rm = TRUE)
+  return(cuartil = q25)
+}
+
+cuartil_75 <- function(x) {
+  q75 <- quantile(x, 0.75, na.rm = TRUE)
+  return(cuartil = q75)
+}
+
+summaryBy(
+  Balance ~ Exited,
+  data = data_r14,
+  FUN = c(mean, Mode, cuartil_25, median, cuartil_75, sd, min, max)
+)
+
+```
 
 ```{r}
 #Cambiar variable Exited a factor
@@ -125,7 +178,17 @@ data %>%
   data
 ```
 
+Correlación de Spearman
+```{r warning=FALSE}
+cor(data_r14$Balance,as.numeric(data_r14$Exited))
+```
+Correlación Point-Biseral
+```{r warning=FALSE}
+library(polycor)
+polyserial(data_r14$Balance,data_r14$Exited)
+```
 
+<<<<<<< HEAD
 ```{r}
 #Naturaleza de los datos
 data %>% glimpse
@@ -215,6 +278,43 @@ ggplot(data, aes(x = Exited, y = EstimatedSalary)) +
 A partir de lo anterior, se puede mencionar que el salario tiene poco efecto sobre las posibilidades de que un cliente abadone el banco. 
 
 Nota: no hay una diferencia visual aparente en la distribuci�n de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser �til para el an�lisis.
+=======
+**Grafico**
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_density()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_boxplot()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+
+**Interpretacion**
+Balance:
+Se puede observar que los clientes que abandonan la entidad tienen una media superior a los que no abandonan. Esto representaría lo obvio en una situación normal. Sin embargom se puede ver que existe bastante cantidad de gente que abandona la institución con una poca cantidad de dinero. Esto se podría explicar por normas o reglamentos que se hayan aajustado y pudo haber causado incertidumbre en los clientes. También se debe notar que la mayoría de gente que no abandona la entidad tiene poco dinero. Sin embargo, el promedio de estos no está alejado de los que sí abandonan.
+
+#### CreditScore vs HasCrCard vs Exited
+```{r}
+ggplot(data_r14, aes(x = CreditScore, fill = HasCrCard)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Gráfico de Densidad Agrupado por 'Exited' ",
+       x = "Credit Score",
+       y = "Densidad") +
+  theme_minimal() +
+  facet_grid(Exited ~ .)
+```
+Si bien se ve que la distribución de los clientes que abandonaron y los que no se asemejan mucho. Los que abandonaron tienen cierta tendencia a tener un poco peor score que los que no. Principalmente si no tienen tarjeta de crédito. Esto indicaría que el problema se puede dar en algún otro producto financiero de la entidad y no precisamente de las tarjetas de crédito. 
+>>>>>>> ae3444ee58a76e022e3b38411b4b87e78decd0dd
 
 ### Room 15
 
@@ -224,6 +324,41 @@ Nota: no hay una diferencia visual aparente en la distribuci�n de la variable sa
 
 
 ### Room 16
+```{r}
+data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+  geom_point()
+```
+
+
+```{r}
+data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+  geom_point()
+
+```
+
+
+```{r}
+data %>% ggplot(aes(x=Exited,y=Age)) + geom_boxplot()
+```
+
+```{r}
+# realizar una prueba Anova
+
+# Variables cualitativas
+data %>%
+  tabyl (HasCrCard,Exited) %>% 
+  adorn_totals(c("row"))%>% adorn_percentages("col") %>% 
+  adorn_pct_formatting(digits = 2)
+
+```
+
+
+```{r}
+#3 variables
+data %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
+  geom_boxplot()
+
+```
 
 
 
