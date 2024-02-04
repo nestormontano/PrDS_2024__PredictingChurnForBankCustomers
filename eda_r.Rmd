@@ -10,6 +10,8 @@ output: html_notebook
 library(tidyverse)
 library(magrittr)
 library(skimr)
+library(dplyr)
+
 ```
 
 ### Importacion
@@ -112,9 +114,107 @@ data %>%
 ### Room 14
 
 
+```{r}
+#Cambiar variable Exited a factor
+
+data %>% 
+  mutate(
+    Exited = factor(Exited, levels= c(0, 1), 
+                             labels= c('no', 'si') ),
+  ) ->
+  data
+```
 
 
+```{r}
+#Naturaleza de los datos
+data %>% glimpse
 
+```
+
+#### Geography vs Exited
+
+**Tabla**
+
+```{r}
+# Crear tabla de frecuencia
+freq_table <- table(data$Exited, data$Geography)
+print(freq_table)
+```
+
+
+```{r}
+# Convertir la tabla en un formato de datos adecuado para barplot
+bar_data <- as.data.frame.matrix(freq_table)
+```
+
+**Gráfico**
+
+```{r}
+barplot(freq_table,
+        xlab = "País", ylab = "Frecuencia",
+        col = c("#53868B", "#76EEC6"),
+        ylim=c(0,6000),
+        xlim=c(0,6), 
+        legend.text = rownames(freq_table))
+
+```
+**Intepretación**
+
+Estos resultados sugieren que la proporción de clientes que abandonan el banco varía según el país de residencia. 
+
+En Francia, la mayoría de los clientes, representados por 4204 observaciones, optaron por no abandonar el banco, mientras que 810 clientes sí tomaron esa decisión. En Alemania, la distribución es más equitativa, con 1695 clientes que decidieron quedarse y 814 que abandonaron. Por último, en España, aunque 2064 clientes eligieron permanecer, 413 clientes tomaron la decisión de abandonar el banco.
+
+
+#### EstimatedSalary vs Exited
+
+**Estadísticas descriptivas**
+
+```{r}
+library(doBy)
+
+summary_data <- summaryBy(EstimatedSalary ~ Exited, data = data, FUN = c(mean, sd, median)) #Media, desviación estándar y mediana
+```
+
+**Intepretación**
+
+Media: Para aquellos clientes que no abandonaron el banco, la media del salario es de aproximadamente $99,738.39.Para aquellos clientes que abandonaron el banco, la media del salario es de aproximadamente $101,465.68.
+
+Desviación estándar: Para aquellos que no abandonaron el banc, la desviación estándar del salario es de aproximadamente $57,405.59. Para aquellos que abandonaron el banco, la desviación estándar del salario es de aproximadamente $57,912.42.La comparación de las desviaciones estándar sugiere que la variabilidad en los salarios no difiere significativamente entre aquellos que abandonaron y los que no abandonaron el banco. 
+
+Mediana:Para aquellos que no abandonaron el banco, la mediana del salario es de aproximadamente $99,645.04.
+Para aquellos que abandonaron el banco, la mediana del salario es de aproximadamente $102,460.84. 
+
+Dado que los valores de la media y la mediana son bastante similares, esto indica que la mayoría de los datos están distribuidos de manera uniforme alrededor del centro de la distribución, y no se observan valores extremadamente altos (outliers).
+
+
+**Grafico de densidad**
+
+```{r}
+ggplot(data, aes(x = EstimatedSalary, fill = Exited)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Gráfico de Densidad",
+       x = "Salario", y = "Densidad") +
+  theme_minimal()
+```
+
+
+**Diagrama de caja**
+
+
+```{r}
+library(ggplot2)
+
+ggplot(data, aes(x = Exited, y = EstimatedSalary)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(title = "Boxplot",
+       x = "Abandono", y = "Salario")
+```
+
+**Interpretación**
+A partir de lo anterior, se puede mencionar que el salario tiene poco efecto sobre las posibilidades de que un cliente abadone el banco. 
+
+Nota: no hay una diferencia visual aparente en la distribución de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser útil para el análisis.
 
 ### Room 15
 
