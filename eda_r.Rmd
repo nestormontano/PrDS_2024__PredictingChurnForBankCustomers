@@ -278,6 +278,17 @@ ggplot(data, aes(x = Exited, y = EstimatedSalary)) +
 A partir de lo anterior, se puede mencionar que el salario tiene poco efecto sobre las posibilidades de que un cliente abadone el banco. 
 
 Nota: no hay una diferencia visual aparente en la distribución de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser útil para el análisis.
+
+
+
+```{r}
+#Correlación entre varoables
+cor(data$EstimatedSalary,as.numeric(data$Exited))
+```
+**Interpretación**
+En este caso, el valor de 0.0121 indica una correlación muy cercana a cero, es decir,  sugiere una relación lineal débil o prácticamente inexistente entre las dos variables.
+
+
 =======
 **Grafico**
 Densidad
