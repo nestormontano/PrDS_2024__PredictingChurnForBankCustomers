@@ -211,44 +211,44 @@ print(freq_table)
 bar_data <- as.data.frame.matrix(freq_table)
 ```
 
-**Gráfico**
+**Gr?fico**
 
 ```{r}
 barplot(freq_table,
-        xlab = "País", ylab = "Frecuencia",
+        xlab = "Pa?s", ylab = "Frecuencia",
         col = c("#53868B", "#76EEC6"),
         ylim=c(0,6000),
         xlim=c(0,6), 
         legend.text = rownames(freq_table))
 
 ```
-**Intepretación**
+**Intepretaci?n**
 
-Estos resultados sugieren que la proporción de clientes que abandonan el banco varía según el país de residencia. 
+Estos resultados sugieren que la proporci?n de clientes que abandonan el banco var?a seg?n el pa?s de residencia. 
 
-En Francia, la mayoría de los clientes, representados por 4204 observaciones, optaron por no abandonar el banco, mientras que 810 clientes sí tomaron esa decisión. En Alemania, la distribución es más equitativa, con 1695 clientes que decidieron quedarse y 814 que abandonaron. Por último, en España, aunque 2064 clientes eligieron permanecer, 413 clientes tomaron la decisión de abandonar el banco.
+En Francia, la mayor?a de los clientes, representados por 4204 observaciones, optaron por no abandonar el banco, mientras que 810 clientes s? tomaron esa decisi?n. En Alemania, la distribuci?n es m?s equitativa, con 1695 clientes que decidieron quedarse y 814 que abandonaron. Por ?ltimo, en Espa?a, aunque 2064 clientes eligieron permanecer, 413 clientes tomaron la decisi?n de abandonar el banco.
 
 
 #### EstimatedSalary vs Exited
 
-**Estadísticas descriptivas**
+**Estad?sticas descriptivas**
 
 ```{r}
 library(doBy)
 
-summary_data <- summaryBy(EstimatedSalary ~ Exited, data = data, FUN = c(mean, sd, median)) #Media, desviación estándar y mediana
+summary_data <- summaryBy(EstimatedSalary ~ Exited, data = data, FUN = c(mean, sd, median)) #Media, desviaci?n est?ndar y mediana
 ```
 
-**Intepretación**
+**Intepretaci?n**
 
 Media: Para aquellos clientes que no abandonaron el banco, la media del salario es de aproximadamente $99,738.39.Para aquellos clientes que abandonaron el banco, la media del salario es de aproximadamente $101,465.68.
 
-Desviación estándar: Para aquellos que no abandonaron el banc, la desviación estándar del salario es de aproximadamente $57,405.59. Para aquellos que abandonaron el banco, la desviación estándar del salario es de aproximadamente $57,912.42.La comparación de las desviaciones estándar sugiere que la variabilidad en los salarios no difiere significativamente entre aquellos que abandonaron y los que no abandonaron el banco. 
+Desviaci?n est?ndar: Para aquellos que no abandonaron el banc, la desviaci?n est?ndar del salario es de aproximadamente $57,405.59. Para aquellos que abandonaron el banco, la desviaci?n est?ndar del salario es de aproximadamente $57,912.42.La comparaci?n de las desviaciones est?ndar sugiere que la variabilidad en los salarios no difiere significativamente entre aquellos que abandonaron y los que no abandonaron el banco. 
 
 Mediana:Para aquellos que no abandonaron el banco, la mediana del salario es de aproximadamente $99,645.04.
 Para aquellos que abandonaron el banco, la mediana del salario es de aproximadamente $102,460.84. 
 
-Dado que los valores de la media y la mediana son bastante similares, esto indica que la mayoría de los datos están distribuidos de manera uniforme alrededor del centro de la distribución, y no se observan valores extremadamente altos (outliers).
+Dado que los valores de la media y la mediana son bastante similares, esto indica que la mayor?a de los datos est?n distribuidos de manera uniforme alrededor del centro de la distribuci?n, y no se observan valores extremadamente altos (outliers).
 
 
 **Grafico de densidad**
@@ -256,7 +256,7 @@ Dado que los valores de la media y la mediana son bastante similares, esto indic
 ```{r}
 ggplot(data, aes(x = EstimatedSalary, fill = Exited)) +
   geom_density(alpha = 0.5) +
-  labs(title = "Gráfico de Densidad",
+  labs(title = "Gr?fico de Densidad",
        x = "Salario", y = "Densidad") +
   theme_minimal()
 ```
@@ -274,19 +274,19 @@ ggplot(data, aes(x = Exited, y = EstimatedSalary)) +
        x = "Abandono", y = "Salario")
 ```
 
-**Interpretación**
+**Interpretaci?n**
 A partir de lo anterior, se puede mencionar que el salario tiene poco efecto sobre las posibilidades de que un cliente abadone el banco. 
 
-Nota: no hay una diferencia visual aparente en la distribución de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser útil para el análisis.
+Nota: no hay una diferencia visual aparente en la distribuci?n de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser ?til para el an?lisis.
 
 
 
 ```{r}
-#Correlación entre varoables
+#Correlaci?n entre varoables
 cor(data$EstimatedSalary,as.numeric(data$Exited))
 ```
-**Interpretación**
-En este caso, el valor de 0.0121 indica una correlación muy cercana a cero, es decir,  sugiere una relación lineal débil o prácticamente inexistente entre las dos variables.
+**Interpretaci?n**
+En este caso, el valor de 0.0121 indica una correlaci?n muy cercana a cero, es decir,  sugiere una relaci?n lineal d?bil o pr?cticamente inexistente entre las dos variables.
 
 
 =======
@@ -328,6 +328,126 @@ Si bien se ve que la distribuciÃ³n de los clientes que abandonaron y los que no 
 >>>>>>> ae3444ee58a76e022e3b38411b4b87e78decd0dd
 
 ### Room 15
+
+
+
+```{r}
+
+data %>% 
+  group_by(Exited,Gender) %>% 
+  count() %>% 
+  ggplot( aes(x= Gender, y= n,fill=Exited)) +
+  geom_col()
+
+```
+```{r}
+data %>% 
+  group_by(Exited,Gender) %>% 
+  count() %>% 
+  ggplot( aes(x= Gender, y= n,fill=Exited)) +
+  geom_col(position="fill")                    
+
+
+```
+```{r}
+round(prop.table(table(data$Gender,data$Exited),1),2);round(prop.table(table(data$Gender,data$Exited),2),2)                   
+
+
+```
+
+**Interpretacion**
+
+En primer lugar notamos la presencia de data imbalanceda en la variable Y (exited), ya que se tiene 8k clientes satisfechos y solo 2 mil clientes insatisfechos.
+Por otro lado, mas del 50% de clientes insatifechos son mujeres.
+En cambio, de los clientes satifechos el 57% son hombres.
+
+
+Del total de mujeres de la muestra, el 75% son clientas satisfechas 
+A comparacion de los hombres, que son el 84%
+
+
+
+
+
+#### NUMOFPRODUCTS
+
+
+```{r}
+data %>% ggplot( aes(x= as.factor(Exited), y= NumOfProducts)) + geom_boxplot()  
+
+
+
+```
+```{r}
+
+data %>% 
+  group_by(Exited,NumOfProducts) %>% 
+  count() %>% 
+  ggplot( aes(x= NumOfProducts, y= n,fill=Exited)) +
+  geom_col() ;
+
+
+
+```
+```{r}
+
+data %>% 
+  group_by(Exited,NumOfProducts) %>% 
+  count() %>% 
+  ggplot( aes(x= NumOfProducts, y= n,fill=Exited)) +
+  geom_col(position="fill") 
+
+```
+```{r}
+      table(data$Exited,data$NumOfProducts);table(data$NumOfProducts)                         
+```
+ En primer lugar, la variable NumofPorducts es una variable discreta acotada de 1 a 4
+ El 97% de clientes tiene a lo mucho 2 productos financieros en el banco.
+  Todos los clientes que tienen 4 productos financieros estan inconformes
+ Cerca del 75% de clientes que tienen 1 producto financieros estan conformes
+ Son mas satisfechos los clientes que tienen 2 productos que los que tienen solo 1 producto.
+
+
+
+####Multivariadovariado
+
+
+```{r}
+library('corrplot')
+
+library(psych)
+
+data_continua<-data %>% select(CreditScore,Age,Tenure,Balance,NumOfProducts,EstimatedSalary)
+data_continua<-as.matrix(data_continua)
+corPlot(data_continua)
+
+
+```
+####Grafico para 3 variables
+
+```{r}
+
+ggplot(data, aes(x = factor(Exited), y = CreditScore, fill = factor(HasCrCard))) +
+  geom_violin(trim = FALSE) +
+  geom_point(stat = "summary", fun = "mean", shape = 1, size = 1, position = position_dodge(width = 0.8)) +
+  labs(title = "Violin Plot de CreditScore por HasCreditCard y Exited",
+       x = "Exited",
+       y = "Credit Score",
+       fill = "Has Credit Card") +
+  theme_minimal() +
+  facet_grid(. ~ HasCrCard)
+
+
+ggplot(data, aes(x = factor(Exited), y = CreditScore, fill = factor(HasCrCard))) +
+  geom_point(stat = "summary", fun = "median", shape = 3, size = 20, position = position_dodge(width = 0.8)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", position = position_dodge(width = 0.8), aes(fill = factor(HasCrCard)), binwidth = 1.8) +
+  labs(title = "Dotplot de CreditScore por HasCreditCard y Exited",
+       x = "Exited",
+       y = "Credit Score",
+       fill = "Has Credit Card") +
+  theme_minimal()
+
+```
 
 
 
