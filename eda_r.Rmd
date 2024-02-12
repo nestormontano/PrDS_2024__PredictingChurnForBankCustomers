@@ -455,24 +455,61 @@ ggplot(data, aes(x = factor(Exited), y = CreditScore, fill = factor(HasCrCard)))
 
 
 ### Room 16
-```{r}
-data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+
+# Analisis Univariado Age, HasCrCard
+data <- data %>% select(-1,-2)
+# Age
+data %>% 
+  reframe( 
+    tibble(
+      Descrip= c('P_0', 'P_02', 'P_25', 'P_50' , 'P_75', 'P_85', 'P_97', 'P_100') ,
+      Valor= quantile( Age, c(0, 0.2, 0.25, 0.50 ,0.75, 0.85, 0.97, 1), na.rm= T)
+    )
+    )
+# Se observa como cerca de un 83% de los clientes tienen un rango de edad de entre 31 y 49 años
+## Graficos de AGe y HasCrCard
+hist(data$Age)
+barplot(sort(table(data$HasCrCard)))
+# Se observa como existe un desbalance en los datos a favor de los clientes que si tienen una tarjeta de credito
+
+## Analaisis multivariado
+## Matriz de correlacion
+data_M <- data[sapply(data, is.numeric)]
+cor(data_M)
+corrplot(cor(data_M),method='number')
+# Todas las variables cuantitativas posee muy baja correlacion entre si
+## Eliminado  datos aberrantes, las correlacioones bajan aun mas
+#data_M_fil <- data_M %>% filter(Balance>50000 & Balance<200000)
+#cor(data_M_fil)
+#corrplot(cor(data_M_fil),method='number')
+
+# Variables Cuantitativas vs Cuantitativas
+# Graficos de dispersion
+data %>% filter(Balance>50000 & Balance<200000) %>% mutate(NumOfProducts=as.character(NumOfProducts)) %>% ggplot(aes(x=NumOfProducts,y=Balance)) + geom_boxplot()
+data %>% filter(Balance>0) %>% ggplot(aes(x=Age,y=Balance)) + 
   geom_point()
-```
-
-
-```{r}
-data %>% ggplot(aes(x=NumOfProducts,y=Balance)) + 
+data %>% filter(Balance>0) %>% mutate(Tenure=as.character(Tenure)) %>%         ggplot(aes(x=Tenure,y=Balance)) + 
+  geom_boxplot()
+data %>% filter(Balance>0) %>% ggplot(aes(x=EstimatedSalary,y=Balance)) + 
   geom_point()
+data %>% ggplot(aes(x=Age,y=Tenure)) + 
+  geom_point()
+data %>% ggplot(aes(x=Age,y=NumOfProducts)) + 
+  geom_point()
+# Si EL cliente tiene 4 productos si edad oscila entre 30  a 60 años,  si tiene otra cantidad de productos si edad puede ser cualquiera
+data %>% ggplot(aes(x=Age,y=EstimatedSalary)) + 
+  geom_point() #Hacerle un boxplot
+data %>% ggplot(aes(x=Tenure,y=NumOfProducts)) + 
+  geom_point() #No se entiende nada
+data %>% ggplot(aes(x=Tenure,y=EstimatedSalary)) + 
+  geom_point() #Hacerle boxplot
+data %>% ggplot(aes(x=NumOfProducts,y=EstimatedSalary)) + 
+  geom_point() 
+# Se logra ver en todas las graficas que no existe una clara correlacion entre variables, eliminado problemas de colinealidad para el modelamiento
 
-```
-
-
-```{r}
+## Variables Cuantitativas vs Cualitativas
+# Age vs Exited
 data %>% ggplot(aes(x=Exited,y=Age)) + geom_boxplot()
-```
-
-```{r}
 # realizar una prueba Anova
 
 # Variables cualitativas
@@ -480,16 +517,13 @@ data %>%
   tabyl (HasCrCard,Exited) %>% 
   adorn_totals(c("row"))%>% adorn_percentages("col") %>% 
   adorn_pct_formatting(digits = 2)
-
-```
-
-
-```{r}
 #3 variables
 data %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
   geom_boxplot()
-
-```
-
+#No parece haber una mayor influencia de la variable HasCRCard, pero si se evidencia diferencia de edad de los clientes y si retiro del banco
+  
+# Filtrando por edad
+data %>% filter(Age<60) %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
+  geom_boxplot()
 
 
