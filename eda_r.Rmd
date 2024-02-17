@@ -141,8 +141,10 @@ data %>%
 
 **Tabla**
 Descriptivos
+
 ```{r warning=FALSE}
 library(doBy)
+
 library(DescTools)
 
 data_r14 <- data %>% 
@@ -325,7 +327,7 @@ ggplot(data_r14, aes(x = CreditScore, fill = HasCrCard)) +
   facet_grid(Exited ~ .)
 ```
 Si bien se ve que la distribución de los clientes que abandonaron y los que no se asemejan mucho. Los que abandonaron tienen cierta tendencia a tener un poco peor score que los que no. Principalmente si no tienen tarjeta de crédito. Esto indicaría que el problema se puede dar en algún otro producto financiero de la entidad y no precisamente de las tarjetas de crédito. 
->>>>>>> ae3444ee58a76e022e3b38411b4b87e78decd0dd
+
 
 ### Room 15
 
