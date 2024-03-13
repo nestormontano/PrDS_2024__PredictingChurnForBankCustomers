@@ -64,8 +64,6 @@ fviz_pca_biplot(PCA1, repel = TRUE,geom.ind = "point",label = "var",habillage = 
 fviz_pca_biplot(PCA1, repel = TRUE,geom.ind = "point",label = "var",habillage = "cluster",addEllipses = T)
 
 
-#MCA
-
 
 
 
