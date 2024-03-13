@@ -1,16 +1,28 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "EDA con R"
+output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 
 ## Preliminares
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(dplyr)
 library(magrittr)
 library(skimr)
+<<<<<<< HEAD
+library(dplyr)
+
+=======
+library(janitor)
+library(rstatix)
+library(fdth)
+library(corrplot)
+library(ggplot2)
+>>>>>>> ae3444ee58a76e022e3b38411b4b87e78decd0dd
 ```
 
 ### Importacion
@@ -31,6 +43,7 @@ data %>%
                              labels= c('no', 'si') ),
     IsActiveMember= factor(IsActiveMember, levels= c(0, 1), 
                              labels= c('no', 'si') ),
+    Exited= factor(Exited, levels=c(0,1), labels= c('no','si'))
     
   ) ->
   data
@@ -45,12 +58,15 @@ data %>% glimpse
 
 ## EDA Univariado
 
+
+### Todas las variables
 ```{r}
 skim( data)
 ```
 
 
 
+### Variables con posibles outliers
 
 ```{r}
 data %>% 
@@ -62,6 +78,13 @@ data %>%
     )
 ```
 
+```{r}
+data %>% 
+  ggplot( aes(x=1, y= Balance)) +
+  geom_boxplot() + 
+  coord_flip() +
+  theme_bw()
+```
 
 ```{r}
 data %>% 
@@ -72,6 +95,9 @@ data %>%
     )
     )
 ```
+
+### Balanceo
+
 
 ```{r}
 data %>% 
@@ -112,9 +138,196 @@ data %>%
 
 ### Room 14
 
+#### Balance vs Exited
+
+**Tabla**
+Descriptivos
+
+```{r warning=FALSE}
+library(doBy)
+
+library(DescTools)
+
+data_r14 <- data %>% 
+  mutate(
+    Exited= factor(Exited, levels= c(0, 1),labels=c("no","si")))
+  
+cuartil_25 <- function(x) {
+  q25 <- quantile(x, 0.25, na.rm = TRUE)
+  return(cuartil = q25)
+}
+
+cuartil_75 <- function(x) {
+  q75 <- quantile(x, 0.75, na.rm = TRUE)
+  return(cuartil = q75)
+}
+
+summaryBy(
+  Balance ~ Exited,
+  data = data_r14,
+  FUN = c(mean, Mode, cuartil_25, median, cuartil_75, sd, min, max)
+)
+
+```
+
+```{r}
+#Cambiar variable Exited a factor
+
+data %>% 
+  mutate(
+    Exited = factor(Exited, levels= c(0, 1), 
+                             labels= c('no', 'si') ),
+  ) ->
+  data
+```
+
+Correlación de Spearman
+```{r warning=FALSE}
+cor(data_r14$Balance,as.numeric(data_r14$Exited))
+```
+Correlación Point-Biseral
+```{r warning=FALSE}
+library(polycor)
+polyserial(data_r14$Balance,data_r14$Exited)
+```
+
+<<<<<<< HEAD
+```{r}
+#Naturaleza de los datos
+data %>% glimpse
+
+```
+
+#### Geography vs Exited
+
+**Tabla**
+
+```{r}
+# Crear tabla de frecuencia
+freq_table <- table(data$Exited, data$Geography)
+print(freq_table)
+```
+
+
+```{r}
+# Convertir la tabla en un formato de datos adecuado para barplot
+bar_data <- as.data.frame.matrix(freq_table)
+```
+
+**Gr?fico**
+
+```{r}
+barplot(freq_table,
+        xlab = "Pa?s", ylab = "Frecuencia",
+        col = c("#53868B", "#76EEC6"),
+        ylim=c(0,6000),
+        xlim=c(0,6), 
+        legend.text = rownames(freq_table))
+
+```
+**Intepretaci?n**
+
+Estos resultados sugieren que la proporci?n de clientes que abandonan el banco var?a seg?n el pa?s de residencia. 
+
+En Francia, la mayor?a de los clientes, representados por 4204 observaciones, optaron por no abandonar el banco, mientras que 810 clientes s? tomaron esa decisi?n. En Alemania, la distribuci?n es m?s equitativa, con 1695 clientes que decidieron quedarse y 814 que abandonaron. Por ?ltimo, en Espa?a, aunque 2064 clientes eligieron permanecer, 413 clientes tomaron la decisi?n de abandonar el banco.
+
+
+#### EstimatedSalary vs Exited
+
+**Estad?sticas descriptivas**
+
+```{r}
+library(doBy)
+
+summary_data <- summaryBy(EstimatedSalary ~ Exited, data = data, FUN = c(mean, sd, median)) #Media, desviaci?n est?ndar y mediana
+```
+
+**Intepretaci?n**
+
+Media: Para aquellos clientes que no abandonaron el banco, la media del salario es de aproximadamente $99,738.39.Para aquellos clientes que abandonaron el banco, la media del salario es de aproximadamente $101,465.68.
+
+Desviaci?n est?ndar: Para aquellos que no abandonaron el banc, la desviaci?n est?ndar del salario es de aproximadamente $57,405.59. Para aquellos que abandonaron el banco, la desviaci?n est?ndar del salario es de aproximadamente $57,912.42.La comparaci?n de las desviaciones est?ndar sugiere que la variabilidad en los salarios no difiere significativamente entre aquellos que abandonaron y los que no abandonaron el banco. 
+
+Mediana:Para aquellos que no abandonaron el banco, la mediana del salario es de aproximadamente $99,645.04.
+Para aquellos que abandonaron el banco, la mediana del salario es de aproximadamente $102,460.84. 
+
+Dado que los valores de la media y la mediana son bastante similares, esto indica que la mayor?a de los datos est?n distribuidos de manera uniforme alrededor del centro de la distribuci?n, y no se observan valores extremadamente altos (outliers).
+
+
+**Grafico de densidad**
+
+```{r}
+ggplot(data, aes(x = EstimatedSalary, fill = Exited)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Gr?fico de Densidad",
+       x = "Salario", y = "Densidad") +
+  theme_minimal()
+```
+
+
+**Diagrama de caja**
+
+
+```{r}
+library(ggplot2)
+
+ggplot(data, aes(x = Exited, y = EstimatedSalary)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(title = "Boxplot",
+       x = "Abandono", y = "Salario")
+```
+
+**Interpretaci?n**
+A partir de lo anterior, se puede mencionar que el salario tiene poco efecto sobre las posibilidades de que un cliente abadone el banco. 
+
+Nota: no hay una diferencia visual aparente en la distribuci?n de la variable salario entre los clientes que abandonaron y los que no abandonaron el banco. Por ende, la variable salario puede no ser ?til para el an?lisis.
 
 
 
+```{r}
+#Correlaci?n entre varoables
+cor(data$EstimatedSalary,as.numeric(data$Exited))
+```
+**Interpretaci?n**
+En este caso, el valor de 0.0121 indica una correlaci?n muy cercana a cero, es decir,  sugiere una relaci?n lineal d?bil o pr?cticamente inexistente entre las dos variables.
+
+
+=======
+**Grafico**
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_density()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+Densidad
+```{r}
+library(ggplot2)
+data_r14 %>% 
+  ggplot(aes(x=Balance, fill=Exited))+
+  geom_boxplot()+
+  theme_bw()+
+  facet_grid(. ~ Exited)
+```
+
+**Interpretacion**
+Balance:
+Se puede observar que los clientes que abandonan la entidad tienen una media superior a los que no abandonan. Esto representaría lo obvio en una situación normal. Sin embargom se puede ver que existe bastante cantidad de gente que abandona la institución con una poca cantidad de dinero. Esto se podría explicar por normas o reglamentos que se hayan aajustado y pudo haber causado incertidumbre en los clientes. También se debe notar que la mayoría de gente que no abandona la entidad tiene poco dinero. Sin embargo, el promedio de estos no está alejado de los que sí abandonan.
+
+#### CreditScore vs HasCrCard vs Exited
+```{r}
+ggplot(data_r14, aes(x = CreditScore, fill = HasCrCard)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Gráfico de Densidad Agrupado por 'Exited' ",
+       x = "Credit Score",
+       y = "Densidad") +
+  theme_minimal() +
+  facet_grid(Exited ~ .)
+```
+Si bien se ve que la distribución de los clientes que abandonaron y los que no se asemejan mucho. Los que abandonaron tienen cierta tendencia a tener un poco peor score que los que no. Principalmente si no tienen tarjeta de crédito. Esto indicaría que el problema se puede dar en algún otro producto financiero de la entidad y no precisamente de las tarjetas de crédito. 
 
 
 ### Room 15
@@ -134,10 +347,199 @@ barplot(table(data$NumOfProducts))
 
 
 
+```{r}
+
+data %>% 
+  group_by(Exited,Gender) %>% 
+  count() %>% 
+  ggplot( aes(x= Gender, y= n,fill=Exited)) +
+  geom_col()
+
+```
+```{r}
+data %>% 
+  group_by(Exited,Gender) %>% 
+  count() %>% 
+  ggplot( aes(x= Gender, y= n,fill=Exited)) +
+  geom_col(position="fill")                    
+
+
+```
+```{r}
+round(prop.table(table(data$Gender,data$Exited),1),2);round(prop.table(table(data$Gender,data$Exited),2),2)                   
+
+
+```
+
+**Interpretacion**
+
+En primer lugar notamos la presencia de data imbalanceda en la variable Y (exited), ya que se tiene 8k clientes satisfechos y solo 2 mil clientes insatisfechos.
+Por otro lado, mas del 50% de clientes insatifechos son mujeres.
+En cambio, de los clientes satifechos el 57% son hombres.
+
+
+Del total de mujeres de la muestra, el 75% son clientas satisfechas 
+A comparacion de los hombres, que son el 84%
+
+
+
+
+
+#### NUMOFPRODUCTS
+
+
+```{r}
+data %>% ggplot( aes(x= as.factor(Exited), y= NumOfProducts)) + geom_boxplot()  
+
+
+
+```
+```{r}
+
+data %>% 
+  group_by(Exited,NumOfProducts) %>% 
+  count() %>% 
+  ggplot( aes(x= NumOfProducts, y= n,fill=Exited)) +
+  geom_col() ;
+
+
+
+```
+```{r}
+
+data %>% 
+  group_by(Exited,NumOfProducts) %>% 
+  count() %>% 
+  ggplot( aes(x= NumOfProducts, y= n,fill=Exited)) +
+  geom_col(position="fill") 
+
+```
+```{r}
+      table(data$Exited,data$NumOfProducts);table(data$NumOfProducts)                         
+```
+ En primer lugar, la variable NumofPorducts es una variable discreta acotada de 1 a 4
+ El 97% de clientes tiene a lo mucho 2 productos financieros en el banco.
+  Todos los clientes que tienen 4 productos financieros estan inconformes
+ Cerca del 75% de clientes que tienen 1 producto financieros estan conformes
+ Son mas satisfechos los clientes que tienen 2 productos que los que tienen solo 1 producto.
+
+
+
+####Multivariadovariado
+
+
+```{r}
+library('corrplot')
+
+library(psych)
+
+data_continua<-data %>% select(CreditScore,Age,Tenure,Balance,NumOfProducts,EstimatedSalary)
+data_continua<-as.matrix(data_continua)
+corPlot(data_continua)
+
+
+```
+####Grafico para 3 variables
+
+```{r}
+
+ggplot(data, aes(x = factor(Exited), y = CreditScore, fill = factor(HasCrCard))) +
+  geom_violin(trim = FALSE) +
+  geom_point(stat = "summary", fun = "mean", shape = 1, size = 1, position = position_dodge(width = 0.8)) +
+  labs(title = "Violin Plot de CreditScore por HasCreditCard y Exited",
+       x = "Exited",
+       y = "Credit Score",
+       fill = "Has Credit Card") +
+  theme_minimal() +
+  facet_grid(. ~ HasCrCard)
+
+
+ggplot(data, aes(x = factor(Exited), y = CreditScore, fill = factor(HasCrCard))) +
+  geom_point(stat = "summary", fun = "median", shape = 3, size = 20, position = position_dodge(width = 0.8)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", position = position_dodge(width = 0.8), aes(fill = factor(HasCrCard)), binwidth = 1.8) +
+  labs(title = "Dotplot de CreditScore por HasCreditCard y Exited",
+       x = "Exited",
+       y = "Credit Score",
+       fill = "Has Credit Card") +
+  theme_minimal()
+
+```
+
+
+
 
 
 
 ### Room 16
 
+# Analisis Univariado Age, HasCrCard
+data <- data %>% select(-1,-2)
+# Age
+data %>% 
+  reframe( 
+    tibble(
+      Descrip= c('P_0', 'P_02', 'P_25', 'P_50' , 'P_75', 'P_85', 'P_97', 'P_100') ,
+      Valor= quantile( Age, c(0, 0.2, 0.25, 0.50 ,0.75, 0.85, 0.97, 1), na.rm= T)
+    )
+    )
+# Se observa como cerca de un 83% de los clientes tienen un rango de edad de entre 31 y 49 años
+## Graficos de AGe y HasCrCard
+hist(data$Age)
+barplot(sort(table(data$HasCrCard)))
+# Se observa como existe un desbalance en los datos a favor de los clientes que si tienen una tarjeta de credito
+
+## Analaisis multivariado
+## Matriz de correlacion
+data_M <- data[sapply(data, is.numeric)]
+cor(data_M)
+corrplot(cor(data_M),method='number')
+# Todas las variables cuantitativas posee muy baja correlacion entre si
+## Eliminado  datos aberrantes, las correlacioones bajan aun mas
+#data_M_fil <- data_M %>% filter(Balance>50000 & Balance<200000)
+#cor(data_M_fil)
+#corrplot(cor(data_M_fil),method='number')
+
+# Variables Cuantitativas vs Cuantitativas
+# Graficos de dispersion
+data %>% filter(Balance>50000 & Balance<200000) %>% mutate(NumOfProducts=as.character(NumOfProducts)) %>% ggplot(aes(x=NumOfProducts,y=Balance)) + geom_boxplot()
+data %>% filter(Balance>0) %>% ggplot(aes(x=Age,y=Balance)) + 
+  geom_point()
+data %>% filter(Balance>0) %>% mutate(Tenure=as.character(Tenure)) %>%         ggplot(aes(x=Tenure,y=Balance)) + 
+  geom_boxplot()
+data %>% filter(Balance>0) %>% ggplot(aes(x=EstimatedSalary,y=Balance)) + 
+  geom_point()
+data %>% ggplot(aes(x=Age,y=Tenure)) + 
+  geom_point()
+data %>% ggplot(aes(x=Age,y=NumOfProducts)) + 
+  geom_point()
+# Si EL cliente tiene 4 productos si edad oscila entre 30  a 60 años,  si tiene otra cantidad de productos si edad puede ser cualquiera
+data %>% ggplot(aes(x=Age,y=EstimatedSalary)) + 
+  geom_point() #Hacerle un boxplot
+data %>% ggplot(aes(x=Tenure,y=NumOfProducts)) + 
+  geom_point() #No se entiende nada
+data %>% ggplot(aes(x=Tenure,y=EstimatedSalary)) + 
+  geom_point() #Hacerle boxplot
+data %>% ggplot(aes(x=NumOfProducts,y=EstimatedSalary)) + 
+  geom_point() 
+# Se logra ver en todas las graficas que no existe una clara correlacion entre variables, eliminado problemas de colinealidad para el modelamiento
+
+## Variables Cuantitativas vs Cualitativas
+# Age vs Exited
+data %>% ggplot(aes(x=Exited,y=Age)) + geom_boxplot()
+# realizar una prueba Anova
+
+# Variables cualitativas
+data %>%
+  tabyl (HasCrCard,Exited) %>% 
+  adorn_totals(c("row"))%>% adorn_percentages("col") %>% 
+  adorn_pct_formatting(digits = 2)
+#3 variables
+data %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
+  geom_boxplot()
+#No parece haber una mayor influencia de la variable HasCRCard, pero si se evidencia diferencia de edad de los clientes y si retiro del banco
+  
+# Filtrando por edad
+data %>% filter(Age<60) %>% ggplot(aes(x=HasCrCard,y=Age, color=Exited)) + 
+  geom_boxplot()
 
 
