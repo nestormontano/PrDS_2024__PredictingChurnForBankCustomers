@@ -8,6 +8,7 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(dplyr)
 library(magrittr)
 library(skimr)
 ```
@@ -119,6 +120,16 @@ data %>%
 ### Room 15
 ```{r}
 #edicion de prueba
+table(data$Gender,data$Exited);round(prop.table(table(data$Gender,data$Exited)),2)
+
+round(prop.table(table(data$Gender,data$Exited),1),2)
+round(prop.table(table(data$Gender,data$Exited),2),2)
+
+
+table(data$Exited,data$NumOfProducts);table(data$NumOfProducts)
+barplot(table(data$NumOfProducts))
+
+
 ```
 
 
