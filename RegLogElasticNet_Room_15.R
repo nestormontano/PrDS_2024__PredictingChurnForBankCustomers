@@ -10,6 +10,8 @@ library(rpart)
 library(rpart.plot)
 library(parallel)
 library(doParallel)
+library(glmnet)
+
 
 
 # Data --------------------------------------------------------------------
@@ -128,7 +130,7 @@ train %>%
     ## crear la variable con los pesos
     case_wts = ifelse(Exited == "1", 4, 1),
     ## crea el vector de importancia ponderada
-    case_wts = importance_weights(case_wts)
+      case_wts = importance_weights(case_wts)
   ) -> train
 
 
@@ -162,12 +164,48 @@ receta <- train %>%
 
 #    7.    Training y ajuste de hiperparámetros ----
 ###  7.1   Definir estrategia de Remuestreo (cross validation) ----
+set.seed(1234)
+cv <- vfold_cv(train, v = 5, repeats = 1, strata = Exited)
+cv
+
+
 ###  7.2   Métricas ----
 # Para la combinación de hiperparámetros y para la elección del modelo final
+metricas <- metric_set(accuracy, sens, spec, bal_accuracy)
+metricas
+
+
 ###  7.3   Especificación del Modelo ----
+?glmnet::glmnet
+
+reglog_elasnet <- logistic_reg(penalty = double(1), mixture = double(1)) %>% 
+                      set_engine("glmnet") %>% 
+                      translate()
+reglog_elasnet
+
+
 ###  7.4   Workflow: Receta, modelo y pesos ----
+rlen_wflow <-
+    workflow() %>%
+    add_recipe(receta) %>%
+    add_model(reglog_elasnet) %>%
+    add_case_weights(case_wts) ## Aquí agregamos los pesos
+rlen_wflow
+
+
 ###  7.5   Afinamiento de hiperparámetros ----
 #### 7.5.1 Definir Malla de búsqueda ----
+set.seed(123)
+rlen_grid <- reglog_elasnet %>%
+  ## preguntamos los parametros tuneables del modelo
+  parameters() %>%
+  ## Vamos a definir un rango para el min_n y mtry
+  update(penalty= penalty(range= c(70, 170)),
+         mtry= mtry( range= c(4, 7))) %>%
+  grid_latin_hypercube(size = 10)
+
+
+
 #### 7.5.2 Iniciar Paralelización ----
 #### 7.5.3 Entrenar malla de búsqueda en el remuestreo ----
 #Aquí se puede repetir la malla de búsqueda y estos primeros 3 pasos.
