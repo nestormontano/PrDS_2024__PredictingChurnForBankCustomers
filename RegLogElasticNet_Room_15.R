@@ -80,12 +80,12 @@ fviz_pca_biplot(PCA1, repel = TRUE,geom.ind = "point",label = "var",habillage = 
 
 
 # Ver video para definir bien los pasos.
-## 1. Eliminar variables ----
+# 1. Eliminar variables ----
 # novars <- c("RowNumber", "CustomerId", "Surname")#, "HasCrCard", "IsActiveMember"
 # data <- data %>% select(-one_of(novars))
 
 
-## 2. Crear variable de cluster ----
+# 2. Crear variable de cluster -------------------------------------------
 datanum <- data %>% select_if(is.numeric)
 datanumExi <- data %>% select_if(is.numeric) %>% mutate(Exited=data$Exited)
 regtree2 <- rpart(datanumExi$Exited ~., data = datanumExi)
@@ -109,10 +109,10 @@ par(mfrow=c(1,1))
 }
 
 
-## 3. Imputa (No hay valores que imputar) ----
+# 3. Imputa (No hay valores que imputar) ---------------------------------
 
 
-## 4. Train - Test ----
+# 4. Train - Test --------------------------------------------------------
 set.seed(1234) # Semilla para aleatorios
 split <- data %>%
   initial_split(
@@ -124,7 +124,7 @@ train <- training(split);dim(train)
 test <- testing(split);dim(test)
 
 
-# 5. Balancea datos ----
+# 5. Balancea datos ------------------------------------------------
 train %>% 
   mutate(
     ## crear la variable con los pesos
@@ -134,7 +134,7 @@ train %>%
   ) -> train
 
 
-## 6. Crear receta ----
+# 6. Crear receta ----
 receta <- train %>%
   recipe(Exited ~ . ) %>% ## Crea la receta
   ## Eliminar variables que no usaremos
@@ -162,7 +162,7 @@ receta <- train %>%
   step_nzv(all_predictors());receta
 
 
-#    7.    Training y ajuste de hiperparámetros ----
+#    7.    Training y ajuste de hiperparámetros -----------------------
 ###  7.1   Definir estrategia de Remuestreo (cross validation) ----
 set.seed(1234)
 cv <- vfold_cv(train, v = 5, repeats = 1, strata = Exited)
@@ -173,15 +173,16 @@ cv
 # Para la combinación de hiperparámetros y para la elección del modelo final
 metricas <- metric_set(accuracy, sens, spec, bal_accuracy)
 metricas
+# La métrica estratégica para este proyecto es la sensibilidad,
+# en otras palabras, la proporción de verdaderos positivos,
+# o la efectividad del modelo para detectar los clientes que
+# abandonan la empresa, de entre todos aquellos que realmente lo hacen.
 
 
 ###  7.3   Especificación del Modelo ----
-?glmnet::glmnet
-
-reglog_elasnet <- logistic_reg(penalty = double(1), mixture = double(1)) %>% 
+reglog_elasnet <- logistic_reg(penalty = tune(), mixture = tune()) %>% 
                       set_engine("glmnet") %>% 
-                      translate()
-reglog_elasnet
+                      translate() #Tiene un solo modo:Clasificar - Entonces, family="binomial"?
 
 
 ###  7.4   Workflow: Receta, modelo y pesos ----
@@ -190,7 +191,6 @@ rlen_wflow <-
     add_recipe(receta) %>%
     add_model(reglog_elasnet) %>%
     add_case_weights(case_wts) ## Aquí agregamos los pesos
-rlen_wflow
 
 
 ###  7.5   Afinamiento de hiperparámetros ----
@@ -199,16 +199,38 @@ set.seed(123)
 rlen_grid <- reglog_elasnet %>%
   ## preguntamos los parametros tuneables del modelo
   parameters() %>%
-  ## Vamos a definir un rango para el min_n y mtry
-  update(penalty= penalty(range= c(70, 170)),
-         mtry= mtry( range= c(4, 7))) %>%
+  ## Vamos a definir un rango para el penalty(regularizacion) y mixture(alpha)
+  update(penalty= penalty( range= c(0.1, 0.2) ), # Penalty es la cantidad de regularización (shrinkage)
+         mixture= mixture( range= c(0, 1)) ) %>% #Mixture es el parámetro alpha que indica si es 1=Lasso, 0=Ridge, o ElasticNet.
   grid_latin_hypercube(size = 10)
 
 
-
 #### 7.5.2 Iniciar Paralelización ----
+parallel::detectCores(logical=FALSE)
+cl <- makePSOCKcluster(4) #El número detectado
+registerDoParallel(cl)
+#parallel::stopCluster(cl) ## Esto se debe ejecutar al final
+
+
 #### 7.5.3 Entrenar malla de búsqueda en el remuestreo ----
+set.seed(123)
+rlen_tuned <- tune_grid(
+  rlen_wflow, ## Workflow: Receta, modelo y case_weights
+  resamples= cv, ## Crossvalidation
+  grid = rlen_grid, ## Malla de Busqueda
+  metrics = metricas, ## Metricas
+  control= control_grid(allow_par = T, save_pred = T) ## Paralel y Pred
+)
+rlen_tuned
+
+show_best(rlen_tuned, metric = "accuracy", n = 10)
+show_best(rlen_tuned, metric = "sens", n = 10)
+show_best(rlen_tuned, metric = "spec", n = 10)
+
 #Aquí se puede repetir la malla de búsqueda y estos primeros 3 pasos.
+
+
+
 #### 7.5.3 Entrenar malla de búsqueda en el remuestreo ----
 ###  7.6   Modelo final ----
 #### 7.6.1 Seleccionar la mejor combinación de hiperparámetros ----
@@ -217,7 +239,10 @@ rlen_grid <- reglog_elasnet %>%
 ###  7.7   Evaluación del modelo ----
 #Comparación de las métricas en el train y en el test para ver si hubo sobreajuste o no.
 #### 7.7.1 Finalizar la paralelización ----
-
+# parallel::detectCores(logical=FALSE)
+# cl <- makePSOCKcluster(4)
+# registerDoParallel(cl)
+parallel::stopCluster(cl) ## Esto se debe ejecutar al final
 
 
 
