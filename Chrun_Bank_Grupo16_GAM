@@ -1,0 +1,123 @@
+#Librerias
+library(mgcv)
+library(caret)
+library(tidyverse)
+library(magrittr)
+library(skimr)
+library(janitor)
+library(rstatix)
+library(fdth)
+library(corrplot)
+library(ggplot2)
+library(tibble)
+library(rstatix)
+library(fdth)
+library(factoextra)
+library(FactoMineR)
+library(NbClust)
+library(cluster)
+library(readr)
+library(dplyr)
+library(gridExtra)
+library(tidymodels)
+
+
+# Data --------------------------------------------------------------------
+
+data <- read_csv('Data/Churn_Modelling.csv')
+data %>% 
+  mutate(
+    HasCrCard= factor(HasCrCard, levels= c(0, 1)),
+    IsActiveMember= factor(IsActiveMember, levels= c(0, 1)),
+    Exited= factor(Exited, levels=c(0,1)),
+    Gender=factor(Gender),
+    Geography=factor(Geography),
+    NumOfProducts=factor(NumOfProducts, levels=c(1,2,3,4),ordered = T)
+  ) %>%
+  select(-1,-2,-3)->
+  data
+skim(data)
+data <- data %>% mutate(NumOfProducts=recode(NumOfProducts, '1'='1','2'='2 or more','3'='2 or more','4'='2 or more')) %>% view()
+
+
+
+# Analisis univariado y multivariado --------------------------------------
+#Variables: y=Exited x= Geo, Gender, IsActiMem, Age, Balance, Num
+data %>% ggplot(aes(x=Age,y=Exited)) + geom_point()
+data %>% ggplot(aes(x=Tenure,y=Exited)) + geom_point()
+data %>% ggplot(aes(x=Balance,y=Exited)) + geom_point()
+data %>% ggplot(aes(x=NumOfProducts,y=Exited)) + geom_point()
+data %>% ggplot(aes(x=EstimatedSalary,y=Exited)) + geom_point()
+data %>% ggplot(aes(x=Age)) + geom_density() + facet_wrap(~Exited,ncol=2)
+data %>% group_by(Gender,Exited) %>% summarise(f=n()) %>% view()
+#data %>% group_by(NumOfProducts, Exited) %>% summarise(f=n()) %>% view()
+
+
+# RandomForest y separacion training-test ---------------------------------
+
+library(randomForest)
+
+set.seed(123)
+
+num_train <- round(0.8*nrow(data))
+train_index <- sample(seq_len(nrow(data)),size = num_train)
+data_train <- data[train_index, ]
+data_test <- data[ -train_index, ]
+
+rf_model <- randomForest( Exited ~.,data=data_train)
+varImpPlot(rf_model)
+predictions <-  predict(rf_model,newdata = data_test)
+#accuracy <- mean(predictions == true_lables)
+prueba <- data_test$Exited
+
+# Modelo GAM --------------------------------------------------------------
+# Tuning del modelo
+peso_si_0 <- 3.5
+Umbral_desicion_0 <- 0.4
+peso_si <- peso_si_0
+Umbral_desicion <- Umbral_desicion_0
+num_prueba <- 0
+for(i in 1:4){
+  for (j in 1:2) {
+    num_prueba <- num_prueba + 1
+    # Modelo
+    pesos<-ifelse(data_train$Exited== '1', peso_si, 1)
+    gam3 <- gam(Exited ~ s(Age,bs='cc',sp=sp_1) + s(Balance, bs='ad') + 
+                  s(CreditScore, bs='bs') + Gender + Geography,
+                data=data_train, family=binomial, weights = pesos)
+    # Matriz de confusion
+    respuesta_gam3 <- predict(gam3,data_test, type='response') 
+    clase_respuesta <- ifelse(respuesta_gam3 > Umbral_desicion, 1,0)
+    clase_respuesta <- factor(clase_respuesta, labels = c(0,1))
+    prueba <- factor(prueba)
+    matriz_confusion <- confusionMatrix(data = clase_respuesta, 
+                                        reference = prueba,
+                                        positive = '1'
+    )
+    print('Prueba Numero:')
+    print(num_prueba)
+    print('El peso de las variables positivas es:')
+    print(peso_si)
+    print('El Umbral de decision es:')
+    print(Umbral_desicion)
+    print(matriz_confusion)
+    Umbral_desicion <- Umbral_desicion_0 + j*0.1
+  }
+  Umbral_desicion <- Umbral_desicion_0
+  peso_si <- peso_si_0 + i*0.25
+}
+
+# Modelo final
+pesos <-ifelse(data_train$Exited== '1', 3.75, 1)
+gam3 <- gam(Exited ~ s(Age,bs='cc',sp=sp_1) + s(Balance, bs='ad') + 
+              s(CreditScore, bs='bs') + Gender + Geography,
+            data=data_train, family=binomial, weights = pesos)
+# Matriz de confusion
+Umbral_desicion <- 0.5
+respuesta_gam3 <- predict(gam3,data_test, type='response') 
+clase_respuesta <- ifelse(respuesta_gam3 > Umbral_desicion, 1,0)
+clase_respuesta <- factor(clase_respuesta, labels = c(0,1))
+prueba <- factor(prueba)
+matriz_confusion <- confusionMatrix(data = clase_respuesta, 
+                                    reference = prueba,
+                                    positive = '1')
