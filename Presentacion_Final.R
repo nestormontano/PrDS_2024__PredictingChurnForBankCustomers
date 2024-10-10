@@ -82,7 +82,7 @@ for(i in 1:4){
     num_prueba <- num_prueba + 1
     # Modelo
     pesos<-ifelse(data_train$Exited== '1', peso_si, 1)
-    gam3 <- gam(Exited ~ s(Age,bs='cc',sp=sp_1) + s(Balance, bs='ad') + 
+    gam3 <- gam(Exited ~ s(Age,bs='cc',sp=0.2) + s(Balance, bs='ad') + 
                   s(CreditScore, bs='bs') + Gender + Geography,
                 data=data_train, family=binomial, weights = pesos)
     # Matriz de confusion
@@ -109,7 +109,7 @@ for(i in 1:4){
 
 # Modelo final
 pesos <-ifelse(data_train$Exited== '1', 3.75, 1)
-gam3 <- gam(Exited ~ s(Age,bs='cc',sp=sp_1) + s(Balance, bs='ad') + 
+gam3 <- gam(Exited ~ s(Age,bs='cc',sp=0.2) + s(Balance, bs='ad') + 
               s(CreditScore, bs='bs') + Gender + Geography,
             data=data_train, family=binomial, weights = pesos)
 # Matriz de confusion
