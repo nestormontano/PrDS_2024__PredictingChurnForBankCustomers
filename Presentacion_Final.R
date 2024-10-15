@@ -124,6 +124,10 @@ matriz_confusion <- confusionMatrix(data = clase_respuesta,
 summary(gam3)
 plot(gam3)
 gam.check(gam3)
+probabilidad <- predict(gam3, type = "response")
+roc_obj <- roc(data_train$Exited, probabilidad)
+plot(roc_obj, main = "Curva ROC", col = "blue")
+auc(roc_obj)
 
 # El siguiente modelo llamado gam3 tiene los siguientes resultados
 # El modelo Gam3, logra explicar un 20% de la variabilidad de los datos
@@ -131,3 +135,4 @@ gam.check(gam3)
 # El modelo mostro que los clientes con menor balance son mas propenso a cerrar si cuenta
 # El modelo mostro que aquellos clientes con bajo puntaje crediticio son mas propensos a cerrar su cuenta
 # Un accuracy de 0.750, Sensitivity 0.705, Specifity 0.761
+# El AUC ROC del modelo es de 0.789
