@@ -121,3 +121,13 @@ prueba <- factor(prueba)
 matriz_confusion <- confusionMatrix(data = clase_respuesta, 
                                     reference = prueba,
                                     positive = '1')
+summary(gam3)
+plot(gam3)
+gam.check(gam3)
+
+# El siguiente modelo llamado gam3 tiene los siguientes resultados
+# El modelo Gam3, logra explicar un 20% de la variabilidad de los datos
+# El modelo muestra que los clientente de entre 30 a 60 años es mas probable de cerrar su cuenta
+# El modelo mostro que los clientes con menor balance son mas propenso a cerrar si cuenta
+# El modelo mostro que aquellos clientes con bajo puntaje crediticio son mas propensos a cerrar su cuenta
+# Un accuracy de 0.750, Sensitivity 0.705, Specifity 0.761
